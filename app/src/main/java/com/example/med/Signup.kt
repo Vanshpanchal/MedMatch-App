@@ -28,10 +28,9 @@ class Signup : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         fs = FirebaseFirestore.getInstance()
 
-        auth = FirebaseAuth.getInstance()
-        fs = FirebaseFirestore.getInstance()
 
-        binding.SignupBtn.setOnClickListener{
+
+        binding.SignupBtn.setOnClickListener {
             if (binding.username.text.toString().isNotBlank() && binding.email.text.toString()
                     .isNotEmpty() && binding.password.text.toString()
                     .isNotEmpty() && binding.shopname.text.toString().isNotEmpty()
@@ -118,9 +117,9 @@ class Signup : AppCompatActivity() {
                     bar.setBackgroundTint(getColor(R.color.blue))
                     bar.setAction("OK") {
                         bar.dismiss()
-//                        val intent = Intent(this, Signin::class.java)
-//                        startActivity(intent)
-//                        finish()
+                        val intent = Intent(this, Signin::class.java)
+                        startActivity(intent)
+                        finish()
                     }
                     bar.setActionTextColor(getColor(R.color.blue))
                     bar.show()
@@ -135,7 +134,13 @@ class Signup : AppCompatActivity() {
                     fs.collection("Users")
                         .document(auth.currentUser?.uid.toString())
                         .set(userData)
-
+                    val medicalStore = hashMapOf(
+                        "Uid" to auth.currentUser?.uid,
+                        "Uname" to binding.username.text.toString() + "firestore-$randomInt",
+                        "Shop-Name" to shopname
+                    )
+                    fs.collection("Medical-Store").document(auth.currentUser?.uid!!)
+                        .collection("My-Store").document().set(medicalStore)
                 } else {
                     Log.d("D_CHECK", "sendEmailVerification: $task.exception?.message")
                 }
