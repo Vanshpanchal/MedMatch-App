@@ -28,11 +28,14 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.med.databinding.CustomprogressBinding
 import com.example.med.databinding.FragmentMedicinesBinding
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -41,6 +44,7 @@ import com.google.firebase.storage.StorageReference
 
 class Medicines : Fragment() {
     lateinit var binding: FragmentMedicinesBinding
+    lateinit var previewDialog: BottomSheetDialog
     private lateinit var auth: FirebaseAuth
     private lateinit var fs: FirebaseFirestore
     private lateinit var sr: StorageReference
@@ -88,7 +92,7 @@ class Medicines : Fragment() {
         fs = FirebaseFirestore.getInstance()
         medicineList = arrayListOf()
         val recyclerView = binding.rvMedicine
-
+        previewDialog = BottomSheetDialog(requireContext())
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         get_data()
         binding.addMedicine.setOnClickListener {
@@ -146,6 +150,25 @@ class Medicines : Fragment() {
             }
             dialog.show()
         }
+
+        binding.searchBtn.setOnClickListener {
+            if (binding.search.text.toString().isNotEmpty()) {
+                fs.collection("Medicines").document(auth.currentUser?.uid!!)
+                    .collection("MyMedicines").whereEqualTo("Medicine",binding.search.text.toString()).get()
+                    .addOnSuccessListener {
+                        medicineList.clear()
+                        for (data in it) {
+                            val r = data.toObject(medicine::class.java)
+                            Log.d("D_CHECK", "getInventory: $r")
+                            medicineList.add(r)
+                        }
+                        medicineList.sortBy { it.CreatedAt }
+                        Log.d("D_CHECK", "load_data: ${medicineList.size}++++")
+
+                        load_data(medicineList)
+                    }
+            }
+        }
     }
 
     fun get_data() {
@@ -167,10 +190,12 @@ class Medicines : Fragment() {
 
     fun load_data(medicine: ArrayList<medicine>) {
         simulateDataLoading()
-        val specific_inv_adapter = medicineAdapter(requireContext(),medicine)
-        binding.rvMedicine.adapter = specific_inv_adapter
-
-        specific_inv_adapter.onEdit(object :medicineAdapter.EditClick{
+        val adapter = medicineAdapter(requireContext(), medicine)
+        binding.rvMedicine.adapter = adapter
+        if(medicine.size == 0){
+            binding.msg.visibility = View.VISIBLE
+        }
+        adapter.onEdit(object : medicineAdapter.EditClick {
             override fun onEditClick(position: Int) {
                 val view =
                     View.inflate(requireContext(), R.layout.edit_dialog, null)
@@ -209,17 +234,137 @@ class Medicines : Fragment() {
             }
 
         })
+
+        adapter.onItem(object : medicineAdapter.onitemclick {
+            override fun itemClickListener(position: Int) {
+                val view = View.inflate(requireContext(), R.layout.preview_dialog, null)
+                previewDialog.setContentView(view)
+                previewDialog.show()
+                previewDialog.setCancelable(true)
+                previewDialog.setCanceledOnTouchOutside(true)
+                val img = view.findViewById<ImageView>(R.id.M_img)
+                sr = FirebaseStorage.getInstance()
+                    .getReference("Medicines/" + auth.currentUser?.uid)
+                    .child(medicineList[position].ImageUri.toString())
+
+                sr.downloadUrl.addOnSuccessListener {
+                    Glide.with(requireContext())
+                        .load(it)
+                        .into(img)
+                }
+                view.findViewById<TextView>(R.id.med_name).text =
+                    medicineList[position].Medicine.toString()
+                view.findViewById<TextView>(R.id.product_unit).text =
+                    medicineList[position].Stock.toString()
+                view.findViewById<TextView>(R.id.category).text = medicineList[position].Category
+                view.findViewById<TextView>(R.id.pp_unit).text =
+                    medicineList[position].PricePerUnit.toString() + "/-"
+                view.findViewById<TextView>(R.id.m_id).text = medicineList[position].MedicineId
+                val notifyBtn = view.findViewById<Button>(R.id.notify)
+                val deleteBtn = view.findViewById<Button>(R.id.delete)
+                deleteBtn.setOnClickListener {
+                    MaterialAlertDialogBuilder(
+                        requireContext(),
+                    )
+                        .setTitle("Remove Product")
+                        .setIcon(R.drawable.baseline_medical_services_24)
+                        .setMessage("Are you sure you want to remove ${medicineList[position].Medicine}?")
+                        .setPositiveButton("Yes") { dialog, which ->
+                            sr = FirebaseStorage.getInstance()
+                                .getReference("Product/" + auth.currentUser?.uid!!)
+                                .child(medicineList[position].ImageUri.toString())
+                            sr.delete()
+
+//                        val product_ID = product[position]
+                            fs.collection("Medicines").document(auth.currentUser?.uid!!)
+                                .collection("MyMedicines")
+                                .whereEqualTo("MedicineId", medicineList[position].MedicineId).get()
+                                .addOnSuccessListener {
+                                    for (doc in it) {
+                                        val docRef = doc.reference
+                                        docRef.delete().addOnSuccessListener {
+                                            get_data()
+                                            previewDialog.dismiss()
+                                            Log.d("D_CHECK", "onItemLongClick: Deleted")
+                                        }.addOnFailureListener {
+                                            Log.d("D_CHECK", "onItemLongClick: ${it.message}")
+                                        }
+                                    }
+                                    Log.d("D_CHECK", "onItemLongClick: ${it}")
+                                }.addOnFailureListener {
+                                    Log.d("D_CHECK", "onItemLongClick: ${it.message}")
+                                }
+
+                            dialog.dismiss()
+                        }
+                        .setNegativeButton("No") { dialog, which ->
+                            dialog.dismiss()
+                        }
+                        .show();
+                }
+
+                val notifyview =
+                    View.inflate(requireContext(), R.layout.edit_dialog, null)
+                notifyBtn.setOnClickListener {
+                    MaterialAlertDialogBuilder(requireContext()).apply {
+                        setView(notifyview)
+                        notifyview.findViewById<TextView>(R.id.tvmsg).text = "Notify Low Stock"
+                        notifyview.findViewById<TextView>(R.id.textView).text =
+                            "Stock Alert For ${medicineList[position].Medicine}"
+                        notifyview.findViewById<TextInputLayout>(R.id.layout_3).hint =
+                            "Alert Stock"
+                        notifyview.findViewById<TextInputEditText>(R.id.m_qty).text =
+                            Editable.Factory.getInstance()
+                                .newEditable(medicineList[position].LowStock)
+                        previewDialog.dismiss()
+                        setPositiveButton("Save") { dialog, which ->
+                            fs.collection("Medicines").document(auth.currentUser?.uid!!)
+                                .collection("MyMedicines")
+                                .whereEqualTo("MedicineId", medicineList[position].MedicineId).get()
+                                .addOnSuccessListener {
+                                    for (doc in it) {
+                                        val docRef = doc.reference
+                                        val qty =
+                                            notifyview.findViewById<TextInputEditText>(R.id.m_qty).text.toString()
+                                                .toInt()
+                                        docRef.update(
+                                            "LowStock",
+                                            notifyview.findViewById<TextInputEditText>(R.id.m_qty).text.toString()
+                                        ).addOnSuccessListener {
+                                            get_data()
+                                            custom_snackbar("Stock Alert For ${medicineList[position].Medicine} Updated Successfully")
+                                            monitorStock()
+                                            Log.d("D_CHECK", "onItemLongClick: Updated")
+                                        }.addOnFailureListener {
+                                            Log.d("D_CHECK", "onItemLongClick: ${it.message}")
+                                        }
+                                    }
+                                    Log.d("D_CHECK", "onItemLongClick: ${it}")
+                                }.addOnFailureListener {
+                                    Log.d("D_CHECK", "onItemLongClick: ${it.message}")
+                                }
+                            dialog.dismiss()
+                        }
+                    }.show()
+                }
+            }
+
+        })
+
+
         binding.rvMedicine.viewTreeObserver.addOnGlobalLayoutListener {
             binding.ProgressBar.visibility = View.GONE
 
         }
     }
+
     private fun simulateDataLoading() {
         binding.ProgressBar.postDelayed({
             binding.rvMedicine.visibility = View.VISIBLE
 
         }, 2000)
     }
+
     private fun custom_snackbar(message: String) {
         val bar = Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT)
         bar.setBackgroundTint(resources.getColor(R.color.blue))
@@ -315,6 +460,7 @@ class Medicines : Fragment() {
             }
         }
     }
+
     private fun showNotification(title: String, message: String) {
         val notificationManager =
             requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

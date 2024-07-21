@@ -47,6 +47,7 @@
             app:layout_constraintTop_toBottomOf="@+id/Progress_bar" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/search_btn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4sp"
@@ -55,6 +56,18 @@
             android:textColor="@color/white" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/msg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No Data Found"
+        android:textAlignment="center"
+        android:textSize="22dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/Progress_bar"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_medicine"

@@ -3,6 +3,7 @@ package com.example.med
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,8 +14,14 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 
 class MapsFragment : Fragment() {
+    private lateinit var fs: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
+    private lateinit var cordinates: ArrayList<Cordinate>
 
     private val callback = OnMapReadyCallback { googleMap ->
         /**
@@ -29,6 +36,8 @@ class MapsFragment : Fragment() {
         val sydney = LatLng(-34.0, 151.0)
         googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+
+        AdminfetchCoordinatesAndAddMarkers(googleMap)
     }
 
     override fun onCreateView(
@@ -36,6 +45,9 @@ class MapsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        fs = FirebaseFirestore.getInstance()
+        auth = FirebaseAuth.getInstance()
+        cordinates = arrayListOf()
         return inflater.inflate(R.layout.fragment_maps, container, false)
     }
 
@@ -43,5 +55,66 @@ class MapsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
+    }
+
+    private fun AdminfetchCoordinatesAndAddMarkers(googleMap: GoogleMap) {
+        cordinates.clear()
+        fs.collection("Users").get().addOnSuccessListener {
+            for (document in it) {
+                fs.collection("Cordinates").document(document.data.get("Uid").toString())
+                    .collection("MyCordinates")
+                    .orderBy("CreatedAt", Query.Direction.DESCENDING).get()
+                    .addOnSuccessListener { documents ->
+                        for (document in documents) {
+                            val lat = document.getDouble("Latitude") ?: 0.0
+                            val lng = document.getDouble("Longitude") ?: 0.0
+                            val position = LatLng(lat, lng)
+
+                            val marker = document.data.get("Address").toString()
+                            val r = document.toObject(Cordinate::class.java)
+                            cordinates.add(r)
+                            if (cordinates.size > 0) {
+                                googleMap.addMarker(
+                                    MarkerOptions().position(position).title(marker)
+                                )
+                            }
+                        }
+                        // Optionally move the camera to the last marker
+//                        if (!documents.isEmpty) {
+//                            val lastPosition = LatLng(
+//                                documents.last().getDouble("Latitude") ?: 0.0,
+//                                documents.last().getDouble("Longitude") ?: 0.0
+//                            )
+//                            googleMap.moveCamera(
+//                                CameraUpdateFactory.newLatLngZoom(
+//                                    lastPosition,
+//                                    1f
+//                                )
+//                            )
+//                        }
+                        Log.d("D_CHECK", "Map ${cordinates}")
+                        if (cordinates.size > 0) {
+                            cordinates.sortBy { it.CreatedAt }
+                            val lastPosition = LatLng(
+                                cordinates.last().Latitude ?: 0.0,
+                                cordinates.last().Longitude ?: 0.0
+                            )
+                            googleMap.moveCamera(
+                                CameraUpdateFactory.newLatLngZoom(
+                                    lastPosition,
+                                    8f
+                                )
+                            )
+                        }
+                    }
+
+                    .addOnFailureListener { exception ->
+                        Log.w("MapsFragment", "Error getting documents: ", exception)
+                    }
+
+
+            }
+
+        }
     }
 }

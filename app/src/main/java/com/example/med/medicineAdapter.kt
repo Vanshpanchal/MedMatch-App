@@ -20,6 +20,7 @@ class medicineAdapter(private val context: Context,private val items: ArrayList<
     lateinit var auth: FirebaseAuth
     lateinit var sr : StorageReference
     lateinit var editlistener: EditClick
+    lateinit var mylistener: onitemclick
 
     interface EditClick {
         fun onEditClick(position: Int)
@@ -28,12 +29,19 @@ class medicineAdapter(private val context: Context,private val items: ArrayList<
     fun onEdit(listener: EditClick) {
         editlistener = listener
     }
+    interface onitemclick {
+        fun itemClickListener(position: Int)
+    }
+
+    fun onItem(listener: onitemclick) {
+        mylistener = listener
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): med_ViewHolder {
         fs = FirebaseFirestore.getInstance()
         auth = FirebaseAuth.getInstance()
 
         val view = LayoutInflater.from(parent.context).inflate(R.layout.med_rv, parent, false)
-        return med_ViewHolder(view,editlistener)
+        return med_ViewHolder(view,editlistener,mylistener)
     }
 
     override fun getItemCount(): Int {
@@ -59,7 +67,7 @@ class medicineAdapter(private val context: Context,private val items: ArrayList<
 
 
     }
-    class med_ViewHolder (view: View,   editlistener: EditClick
+    class med_ViewHolder (view: View,   editlistener: EditClick, mylistener: onitemclick
     ) : RecyclerView.ViewHolder(view){
         val medicinename: TextView = view.findViewById(R.id.m_name)
         val category: TextView = view.findViewById(R.id.category)
@@ -69,6 +77,9 @@ class medicineAdapter(private val context: Context,private val items: ArrayList<
         val edit: ImageButton = view.findViewById(R.id.edit_btn)
 
         init {
+            view.setOnClickListener {
+                mylistener.itemClickListener(adapterPosition)
+            }
             edit.setOnClickListener {
                 editlistener.onEditClick(adapterPosition)
             }

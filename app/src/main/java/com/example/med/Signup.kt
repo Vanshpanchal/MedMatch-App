@@ -7,19 +7,27 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.android.volley.Request
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.example.med.databinding.ActivitySignupBinding
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestore
+import org.json.JSONObject
 import kotlin.random.Random
 
 class Signup : AppCompatActivity() {
     private lateinit var binding: ActivitySignupBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var fs: FirebaseFirestore
+    private var P_longitude = 0.0
+    private var P_latitude = 0.0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignupBinding.inflate(layoutInflater)
@@ -128,7 +136,8 @@ class Signup : AppCompatActivity() {
                         "Email" to auth.currentUser?.email,
                         "Uid" to auth.currentUser?.uid,
                         "Uname" to binding.username.text.toString() + "firestore-$randomInt",
-                        "Shop-Name" to shopname
+                        "Shop-Name" to shopname,
+                        "Address" to binding.address.text.toString()
                     )
 
                     fs.collection("Users")
@@ -137,10 +146,15 @@ class Signup : AppCompatActivity() {
                     val medicalStore = hashMapOf(
                         "Uid" to auth.currentUser?.uid,
                         "Uname" to binding.username.text.toString() + "firestore-$randomInt",
-                        "Shop-Name" to shopname
+                        "Shop-Name" to shopname,
+                        "Address" to binding.address.text.toString()
                     )
+
+
                     fs.collection("Medical-Store").document(auth.currentUser?.uid!!)
                         .collection("My-Store").document().set(medicalStore)
+                    val address = binding.address.text.toString()
+//                    addressApi(address, auth.currentUser?.uid!!) //Just call after changing Api key
                 } else {
                     Log.d("D_CHECK", "sendEmailVerification: $task.exception?.message")
                 }
@@ -154,4 +168,53 @@ class Signup : AppCompatActivity() {
                 bar.show()
             }
     }
+    private fun addressApi(Address: String, Uid: String) {
+        var cordinates = listOf<Double>()
+        val url =
+            "https://api.geoapify.com/v1/geocode/search?text=$Address&apiKey=a4df04f3e2154cafbf08d57831558743"
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+
+                var longitude = 0.0
+                var latitude = 0.0
+                val jsonObject = JSONObject(response)
+                val featuresArray = jsonObject.getJSONArray("features")
+                val feature = featuresArray.getJSONObject(0)
+                val geometry = feature.getJSONObject("geometry")
+                val coordinates = geometry.getJSONArray("coordinates")
+                if (coordinates.length() >= 2) {
+                    longitude = coordinates.getDouble(0)
+                    latitude = coordinates.getDouble(1)
+                    P_longitude = longitude
+                    P_latitude = latitude
+//                    }
+                }
+                Log.d("D_CHECK", "addressApi: ${longitude}  $latitude}")
+                fs = FirebaseFirestore.getInstance()
+                val cordinates = hashMapOf(
+                    "Longitude" to P_longitude,
+                    "Latitude" to P_latitude,
+                    "Address" to Address,
+                    "CreatedAt" to Timestamp.now().toDate(),
+                    "UserID" to Uid
+                )
+                fs.collection("Cordinates").document(auth.currentUser?.uid!!)
+                    .collection("MyCordinates").document().set(
+                        cordinates
+                    ).addOnSuccessListener {
+                        Log.d(
+                            "D_CHECK",
+                            "Successfully added to firestore addressApi: ${cordinates}"
+                        )
+                    }
+
+            },
+            { error ->
+            })
+        Volley.newRequestQueue(this).add(stringRequest)
+
+
+    }
+
 }
