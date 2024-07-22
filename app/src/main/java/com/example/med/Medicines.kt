@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -41,6 +42,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+
 
 class Medicines : Fragment() {
     lateinit var binding: FragmentMedicinesBinding
@@ -76,6 +78,21 @@ class Medicines : Fragment() {
                 }
             }
         }
+
+    var textWatcher: TextWatcher = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+            // this function is called before text is edited
+        }
+
+        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+            // this function is called when text is edited
+            search()
+        }
+
+        override fun afterTextChanged(s: Editable) {
+            // this function is called after text is edited
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -169,6 +186,8 @@ class Medicines : Fragment() {
                     }
             }
         }
+
+        binding.search.addTextChangedListener(textWatcher)
     }
 
     fun get_data() {
@@ -511,5 +530,15 @@ class Medicines : Fragment() {
 
             notificationManager.notify(notificationId, notification)
         }
+    }
+
+    fun search() {
+        if (binding.search.text.toString().isNotEmpty()) {
+            val filterList = medicineList.filter {  it.Medicine?.startsWith(binding.search.text.toString(),ignoreCase = true)!! }
+            load_data(java.util.ArrayList(filterList))
+        }else{
+            load_data(medicineList)
+        }
+
     }
 }
