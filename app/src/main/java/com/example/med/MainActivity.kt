@@ -37,6 +37,12 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
 
+        bind.explore.setOnClickListener{
+            val intent = Intent(this, User::class.java)
+            startActivity(intent)
+            finish()
+        }
+
         auth = FirebaseAuth.getInstance()
 
         sharedPreferences = getSharedPreferences("USERDATA", MODE_PRIVATE)

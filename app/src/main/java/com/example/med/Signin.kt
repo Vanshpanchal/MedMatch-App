@@ -56,6 +56,7 @@ class Signin : AppCompatActivity() {
     private fun custom_snackbar(message: String) {
         val bar = Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT)
         bar.setBackgroundTint(resources.getColor(R.color.blue))
+        bar.setActionTextColor(resources.getColor(R.color.white))
         bar.setAction("OK") {
             bar.dismiss()
         }

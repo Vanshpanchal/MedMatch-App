@@ -68,4 +68,6 @@
     <string name="shop_name">Shop-Name</string>
     <string name="medicines">Medicines</string>
     <string name="enter_text">Enter text</string>
+    <string name="explore">Explore</string>
+    <string name="pharmacy">pharmacy</string>
 </resources>

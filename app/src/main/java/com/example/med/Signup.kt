@@ -146,13 +146,13 @@ class Signup : AppCompatActivity() {
                     val medicalStore = hashMapOf(
                         "Uid" to auth.currentUser?.uid,
                         "Uname" to binding.username.text.toString() + "firestore-$randomInt",
-                        "Shop-Name" to shopname,
-                        "Address" to binding.address.text.toString()
+                        "ShopName" to shopname,
+                        "Address" to binding.address.text.toString(),
+                        "MedicineID" to emptyList<String>()
                     )
 
 
-                    fs.collection("Medical-Store").document(auth.currentUser?.uid!!)
-                        .collection("My-Store").document().set(medicalStore)
+                    fs.collection("Medical-Store").document(auth.currentUser?.uid!!).set(medicalStore)
                     val address = binding.address.text.toString()
 //                    addressApi(address, auth.currentUser?.uid!!) //Just call after changing Api key
                 } else {
@@ -160,11 +160,11 @@ class Signup : AppCompatActivity() {
                 }
             }?.addOnFailureListener {
                 val bar = Snackbar.make(binding.root, "An Error Occurred", Snackbar.LENGTH_SHORT)
-                bar.setBackgroundTint(getColor(R.color.blue))
+
                 bar.setAction("OK") {
                     bar.dismiss()
                 }
-                bar.setActionTextColor(getColor(R.color.blue))
+                bar.setActionTextColor(getColor(R.color.white))
                 bar.show()
             }
     }

@@ -39,6 +39,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -147,6 +148,12 @@ class Medicines : Fragment() {
                         "UserID" to auth.currentUser?.uid!!,
                         "ImageUri" to "Shop${auth.currentUser?.uid}_med${imageUri.lastPathSegment.toString()}"
                     )
+                    fs.collection("Medical-Store").document(auth.currentUser?.uid!!).update(
+                        "MedicineID",
+                        FieldValue.arrayUnion(imageUri.lastPathSegment.toString())
+                    ).addOnSuccessListener {
+                        Log.d("Hello", "onViewCreated: Addedddd")
+                    }
                     fs.collection("Medicines").document(auth.currentUser?.uid!!)
                         .collection("MyMedicines").document().set(inventoryInfo)
                         .addOnCompleteListener {
@@ -171,7 +178,8 @@ class Medicines : Fragment() {
         binding.searchBtn.setOnClickListener {
             if (binding.search.text.toString().isNotEmpty()) {
                 fs.collection("Medicines").document(auth.currentUser?.uid!!)
-                    .collection("MyMedicines").whereEqualTo("Medicine",binding.search.text.toString()).get()
+                    .collection("MyMedicines")
+                    .whereEqualTo("Medicine", binding.search.text.toString()).get()
                     .addOnSuccessListener {
                         medicineList.clear()
                         for (data in it) {
@@ -211,7 +219,7 @@ class Medicines : Fragment() {
         simulateDataLoading()
         val adapter = medicineAdapter(requireContext(), medicine)
         binding.rvMedicine.adapter = adapter
-        if(medicine.size == 0){
+        if (medicine.size == 0) {
             binding.msg.visibility = View.VISIBLE
         }
         adapter.onEdit(object : medicineAdapter.EditClick {
@@ -534,9 +542,14 @@ class Medicines : Fragment() {
 
     fun search() {
         if (binding.search.text.toString().isNotEmpty()) {
-            val filterList = medicineList.filter {  it.Medicine?.startsWith(binding.search.text.toString(),ignoreCase = true)!! }
+            val filterList = medicineList.filter {
+                it.Medicine?.startsWith(
+                    binding.search.text.toString(),
+                    ignoreCase = true
+                )!!
+            }
             load_data(java.util.ArrayList(filterList))
-        }else{
+        } else {
             load_data(medicineList)
         }
 
