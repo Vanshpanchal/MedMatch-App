@@ -9,6 +9,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -395,8 +396,11 @@ class Medicines : Fragment() {
     private fun custom_snackbar(message: String) {
         val bar = Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT)
         bar.setBackgroundTint(resources.getColor(R.color.blue))
+        bar.setActionTextColor(resources.getColor(R.color.white))
+        bar.setTextColor(Color.WHITE)
         bar.setAction("OK") {
             bar.dismiss()
+
         }
         bar.setActionTextColor(resources.getColor(R.color.blue))
         bar.show()

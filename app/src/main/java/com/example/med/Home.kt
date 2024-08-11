@@ -65,7 +65,7 @@ class Home : AppCompatActivity() {
                 }
 
                 R.id.item_2 -> {
-//                    replacefragement(MapsFragment(), "inventory")
+                    replacefragement(invoices(), "inventory")
 //                    loadFragment(inventory())
 
                     true

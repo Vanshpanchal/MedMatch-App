@@ -27,7 +27,6 @@ class User : AppCompatActivity() {
                 }
 
                 R.id.item_2 -> {
-//                    replacefragement(MapsFragment(), "inventory")
 
 
                     true
@@ -35,6 +34,8 @@ class User : AppCompatActivity() {
 
                 R.id.item_3 -> {
 //                    replacefragement(product(), "product")
+                    replacefragement(MapsFragment(), "inventory")
+
                     true
                 }
 
