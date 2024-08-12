@@ -72,4 +72,5 @@
     <string name="pharmacy">pharmacy</string>
     <string name="invoices">Invoices</string>
     <string name="invoice_detail">Invoice Detail</string>
+    <string name="locate_shop">Locate Shop</string>
 </resources>

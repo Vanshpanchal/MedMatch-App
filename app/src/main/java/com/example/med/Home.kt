@@ -73,7 +73,7 @@ class Home : AppCompatActivity() {
 
                 R.id.item_3 -> {
 //                    loadFragment(product())
-//                    replacefragement(product(), "product")
+                    replacefragement(profile(), "product")
                     true
                 }
 

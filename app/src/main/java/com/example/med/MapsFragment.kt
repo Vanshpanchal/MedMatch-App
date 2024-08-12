@@ -33,9 +33,9 @@ class MapsFragment : Fragment() {
          * install it inside the SupportMapFragment. This method will only be triggered once the
          * user has installed Google Play services and returned to the app.
          */
-        val sydney = LatLng(-34.0, 151.0)
-        googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+//        val sydney = LatLng(-34.0, 151.0)
+//        googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
+//        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
 
         AdminfetchCoordinatesAndAddMarkers(googleMap)
     }
@@ -61,16 +61,18 @@ class MapsFragment : Fragment() {
         cordinates.clear()
         fs.collection("Users").get().addOnSuccessListener {
             for (document in it) {
-                fs.collection("Cordinates").document(document.data.get("Uid").toString())
-                    .collection("MyCordinates")
-                    .orderBy("CreatedAt", Query.Direction.DESCENDING).get()
+                Log.d("D_CHECK", "helloMap:: ${it.documents}")
+
+                fs.collection("Cordinates").document(document.data["Uid"].toString())
+                    .collection("MyCordinates").get()
                     .addOnSuccessListener { documents ->
                         for (document in documents) {
+                            Log.d("D_CHECK", "helloMap ${documents}")
                             val lat = document.getDouble("Latitude") ?: 0.0
                             val lng = document.getDouble("Longitude") ?: 0.0
                             val position = LatLng(lat, lng)
 
-                            val marker = document.data.get("Address").toString()
+                            val marker = document.data["Address"] as String
                             val r = document.toObject(Cordinate::class.java)
                             cordinates.add(r)
                             if (cordinates.size > 0) {
@@ -80,18 +82,18 @@ class MapsFragment : Fragment() {
                             }
                         }
                         // Optionally move the camera to the last marker
-//                        if (!documents.isEmpty) {
-//                            val lastPosition = LatLng(
-//                                documents.last().getDouble("Latitude") ?: 0.0,
-//                                documents.last().getDouble("Longitude") ?: 0.0
-//                            )
-//                            googleMap.moveCamera(
-//                                CameraUpdateFactory.newLatLngZoom(
-//                                    lastPosition,
-//                                    1f
-//                                )
-//                            )
-//                        }
+                        if (!documents.isEmpty) {
+                            val lastPosition = LatLng(
+                                documents.last().getDouble("Latitude") ?: 0.0,
+                                documents.last().getDouble("Longitude") ?: 0.0
+                            )
+                            googleMap.moveCamera(
+                                CameraUpdateFactory.newLatLngZoom(
+                                    lastPosition,
+                                    1f
+                                )
+                            )
+                        }
                         Log.d("D_CHECK", "Map ${cordinates}")
                         if (cordinates.size > 0) {
                             cordinates.sortBy { it.CreatedAt }
@@ -114,6 +116,9 @@ class MapsFragment : Fragment() {
 
 
             }
+
+        }.addOnFailureListener {
+            Log.d("D_CHECK", "helloMap ${it}")
 
         }
     }
