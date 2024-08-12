@@ -74,6 +74,7 @@
         style="@style/Widget.Material3.CardView.Elevated"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/lightgreen"
         android:layout_marginHorizontal="20dp"
         app:layout_goneMarginTop="25dp"
         android:layout_marginTop="32dp"
@@ -124,6 +125,7 @@
         android:orientation="horizontal"
         android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
+        android:backgroundTint="@color/lightgreen"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/uname_card">
 
@@ -166,6 +168,7 @@
         android:layout_marginTop="32dp"
         android:orientation="horizontal"
         android:padding="16dp"
+        android:backgroundTint="@color/lightgreen"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/locate_card">
@@ -182,7 +185,7 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/transparent"
                 android:scaleX="1.2"
-                app:icon="@drawable/baseline_person_24"
+                app:icon="@drawable/lock_reset_24dp_e8eaed_fill0_wght400_grad0_opsz24"
                 android:scaleY="1.2" />
 
             <TextView
@@ -208,6 +211,7 @@
         android:layout_marginVertical="5dp"
         android:layout_marginTop="32dp"
         android:orientation="horizontal"
+        android:backgroundTint="@color/lightgreen"
         android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -225,7 +229,7 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/transparent"
                 android:scaleX="1.2"
-                app:icon="@drawable/baseline_person_24"
+                app:icon="@drawable/baseline_logout_24"
                 android:scaleY="1.2" />
 
             <TextView

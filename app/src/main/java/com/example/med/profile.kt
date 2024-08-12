@@ -95,11 +95,14 @@ class profile : Fragment() {
         loadData()
         var shopname = ""
         var email = ""
+        var username =""
         fs.collection("Users").document(auth.currentUser?.uid!!).get().addOnSuccessListener {
             shopname = it.get("Shop-Name") as String
             email = it.get("Email") as String
-            binding.email.text = "Email: "+email
+            username = it.get("Uname")as String
+            binding.email.text = email
             binding.shopname.text = "Shopname: "+shopname
+            binding.username.text = username
             address = it.get("Address") as String
 
         }
@@ -109,7 +112,8 @@ class profile : Fragment() {
         }
 
         binding.locateCard.setOnClickListener{
-            addressApi(address,auth.currentUser?.uid!!)
+            addressApi(address,auth.currentUser?.uid!!,shopname)
+            custom_snackbar("Location Added Successfully")
         }
         binding.logoutCard.setOnClickListener{
             MaterialAlertDialogBuilder(
@@ -222,7 +226,7 @@ class profile : Fragment() {
         bar.show()
     }
 
-    private fun addressApi(Address: String, Uid: String) {
+    private fun addressApi(Address: String, Uid: String,shopname:String) {
         Log.d("D_CHECK", "addressApi: ${Address}")
         var cordinates = listOf<Double>()
         val url =
@@ -252,10 +256,12 @@ class profile : Fragment() {
                     "Latitude" to P_latitude,
                     "Address" to Address,
                     "CreatedAt" to Timestamp.now().toDate(),
-                    "UserID" to Uid
+                    "UserID" to Uid,
+                    "Shopname" to shopname
                 )
+
                 fs.collection("Cordinates").document(auth.currentUser?.uid!!)
-                    .collection("MyCordinates").document().set(
+                    .collection("MyCordinates").document("data").set(
                         cordinates
                     ).addOnSuccessListener {
                         Log.d(

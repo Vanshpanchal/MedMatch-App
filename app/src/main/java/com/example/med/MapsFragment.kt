@@ -72,7 +72,7 @@ class MapsFragment : Fragment() {
                             val lng = document.getDouble("Longitude") ?: 0.0
                             val position = LatLng(lat, lng)
 
-                            val marker = document.data["Address"] as String
+                            val marker = document.data["Shopname"] as String +", "+ document.data["Address"] as String
                             val r = document.toObject(Cordinate::class.java)
                             cordinates.add(r)
                             if (cordinates.size > 0) {

@@ -154,7 +154,7 @@ class Signup : AppCompatActivity() {
 
                     fs.collection("Medical-Store").document(auth.currentUser?.uid!!).set(medicalStore)
                     val address = binding.address.text.toString()
-//                    addressApi(address, auth.currentUser?.uid!!) //Just call after changing Api key
+                    addressApi(address, auth.currentUser?.uid!!,shopname) //Just call after changing Api key
                 } else {
                     Log.d("D_CHECK", "sendEmailVerification: $task.exception?.message")
                 }
@@ -168,7 +168,7 @@ class Signup : AppCompatActivity() {
                 bar.show()
             }
     }
-    private fun addressApi(Address: String, Uid: String) {
+    private fun addressApi(Address: String, Uid: String,shopname: String) {
         var cordinates = listOf<Double>()
         val url =
             "https://api.geoapify.com/v1/geocode/search?text=$Address&apiKey=a4df04f3e2154cafbf08d57831558743"
@@ -197,10 +197,11 @@ class Signup : AppCompatActivity() {
                     "Latitude" to P_latitude,
                     "Address" to Address,
                     "CreatedAt" to Timestamp.now().toDate(),
-                    "UserID" to Uid
+                    "UserID" to Uid,
+                    "Shopname" to shopname
                 )
                 fs.collection("Cordinates").document(auth.currentUser?.uid!!)
-                    .collection("MyCordinates").document().set(
+                    .collection("MyCordinates").document("data").set(
                         cordinates
                     ).addOnSuccessListener {
                         Log.d(
