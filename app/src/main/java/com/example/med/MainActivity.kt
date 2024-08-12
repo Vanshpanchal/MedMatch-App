@@ -43,59 +43,9 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
 
-        auth = FirebaseAuth.getInstance()
 
-        sharedPreferences = getSharedPreferences("USERDATA", MODE_PRIVATE)
-        editor = sharedPreferences.edit()
-
-        if (sharedPreferences.contains("Email") && sharedPreferences.contains("Pass")) {
-            authenticateUser(
-                sharedPreferences.getString("Email", "").toString(),
-                sharedPreferences.getString("Pass", "").toString()
-            )
-        }
 
     }
 
-    private fun authenticateUser(emailAddress: String, pass: String) {
-        auth.signInWithEmailAndPassword(emailAddress, pass)
-            .addOnCompleteListener { it ->
-                val user = auth.currentUser
-                if (it.isSuccessful) {
-                    if (user != null && user.isEmailVerified) {
 
-                        val intent = Intent(this, Home::class.java)
-                        startActivity(intent)
-
-                    } else {
-                        val bar = Snackbar.make(
-                            bind.root,
-                            "Verify Email",
-                            Snackbar.LENGTH_SHORT
-                        )
-                        bar.setBackgroundTint(getColor(R.color.blue))
-                        bar.setActionTextColor(getColor(R.color.blue))
-                        bar.setAction("OK") {
-                            bar.dismiss()
-                        }
-                        bar.show()
-                    }
-                } else {
-                    Log.d("hello", "onCreate: ${it.exception?.message} ")
-                }
-            }.addOnFailureListener {
-                val bar = Snackbar.make(
-                    bind.root,
-                    "Please Check Your Entered Credentials",
-                    Snackbar.LENGTH_SHORT
-                )
-                bar.setAction("OK") {
-                    bar.dismiss()
-                }
-                bar.setBackgroundTint(getColor(R.color.blue))
-                bar.setActionTextColor(getColor(R.color.blue))
-                bar.show()
-                Log.d("hello", "onCreate: ${it.message} ")
-            }
-    }
 }

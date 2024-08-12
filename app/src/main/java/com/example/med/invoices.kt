@@ -2,11 +2,16 @@ package com.example.med
 
 import android.app.Activity
 import android.app.Dialog
+import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
+import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
@@ -22,11 +27,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.med.databinding.CustomprogressBinding
 import com.example.med.databinding.FragmentInvoicesBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
@@ -36,6 +43,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -178,7 +188,7 @@ class invoices : Fragment() {
         bar.setAction("OK") {
             bar.dismiss()
         }
-        bar.setActionTextColor(resources.getColor(R.color.blue))
+        bar.setActionTextColor(resources.getColor(R.color.white))
         bar.show()
     }
 
@@ -241,52 +251,62 @@ class invoices : Fragment() {
                 view.findViewById<TextView>(R.id.inv_name).text =
                     invoiceList[position].InvoiceName.toString()
                 view.findViewById<TextView>(R.id.date).text =time
-//                view.findViewById<TextView>(R.id.category).text = invoiceList[position].Description
+                view.findViewById<TextView>(R.id.description).text = invoiceList[position].Description
 
 //                view.findViewById<TextView>(R.id.date).text = invoiceList[position].Description
 
+                val downloadbtn = view.findViewById<MaterialButton>(R.id.download)
+                val localFile = File.createTempFile("image", "jpg")
+                downloadbtn.setOnClickListener {
+                    sr.getFile(localFile).addOnSuccessListener {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            createPdfFromLargeImage(requireContext(), localFile,invoiceList[position].InvoiceName.toString())
+                        }
+                    }
+                }
+
                 val notifyBtn = view.findViewById<Button>(R.id.notify)
-//                val deleteBtn = view.findViewById<Button>(R.id.delete)
-//                deleteBtn.setOnClickListener {
-//                    MaterialAlertDialogBuilder(
-//                        requireContext(),
-//                    )
-//                        .setTitle("Remove Product")
-//                        .setIcon(R.drawable.baseline_medical_services_24)
-//                        .setMessage("Are you sure you want to remove ${invoiceList[position].InvoiceName}?")
-//                        .setPositiveButton("Yes") { dialog, which ->
-//                            sr = FirebaseStorage.getInstance()
-//                                .getReference("Invoices/" + auth.currentUser?.uid!!)
-//                                .child(invoiceList[position].ImageUri.toString())
-//                            sr.delete()
-//
-////                        val product_ID = product[position]
-//                            fs.collection("Invoices").document(auth.currentUser?.uid!!)
-//                                .collection("MyInvoices")
-//                                .whereEqualTo("MedicineId", invoiceList[position].InvoiceId).get()
-//                                .addOnSuccessListener {
-//                                    for (doc in it) {
-//                                        val docRef = doc.reference
-//                                        docRef.delete().addOnSuccessListener {
-//                                            get_data()
-//                                            previewDialog.dismiss()
-//                                            Log.d("D_CHECK", "onItemLongClick: Deleted")
-//                                        }.addOnFailureListener {
-//                                            Log.d("D_CHECK", "onItemLongClick: ${it.message}")
-//                                        }
-//                                    }
-//                                    Log.d("D_CHECK", "onItemLongClick: ${it}")
-//                                }.addOnFailureListener {
-//                                    Log.d("D_CHECK", "onItemLongClick: ${it.message}")
-//                                }
-//
-//                            dialog.dismiss()
-//                        }
-//                        .setNegativeButton("No") { dialog, which ->
-//                            dialog.dismiss()
-//                        }
-//                        .show();
-//                }
+                val deleteBtn = view.findViewById<Button>(R.id.delete)
+                deleteBtn.setOnClickListener {
+                    MaterialAlertDialogBuilder(
+                        requireContext(),
+                    )
+                        .setTitle("Remove Product")
+                        .setIcon(R.drawable.baseline_medical_services_24)
+                        .setMessage("Are you sure you want to remove ${invoiceList[position].InvoiceName}?")
+                        .setPositiveButton("Yes") { dialog, which ->
+                            sr = FirebaseStorage.getInstance()
+                                .getReference("Invoices/" + auth.currentUser?.uid!!)
+                                .child(invoiceList[position].ImageUri.toString())
+                            sr.delete()
+
+//                        val product_ID = product[position]
+                            fs.collection("Invoice").document(auth.currentUser?.uid!!)
+                                .collection("MyInvoice")
+                                .whereEqualTo("InvoiceId", invoiceList[position].InvoiceId).get()
+                                .addOnSuccessListener {
+                                    for (doc in it) {
+                                        val docRef = doc.reference
+                                        docRef.delete().addOnSuccessListener {
+                                            previewDialog.dismiss()
+                                            get_data()
+                                            Log.d("D_CHECK", "onItemLongClick: Deleted")
+                                        }.addOnFailureListener {
+                                            Log.d("D_CHECK", "onItemLongClick: ${it.message}")
+                                        }
+                                    }
+                                    Log.d("D_CHECK", "onItemLongClick: ${it}")
+                                }.addOnFailureListener {
+                                    Log.d("D_CHECK", "onItemLongClick: ${it.message}")
+                                }
+
+                            dialog.dismiss()
+                        }
+                        .setNegativeButton("No") { dialog, which ->
+                            dialog.dismiss()
+                        }
+                        .show();
+                }
 
             }
 
@@ -378,5 +398,78 @@ class invoices : Fragment() {
             load_data(invoiceList)
         }
 
+    }
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun createPdfFromLargeImage(context: Context, imageFile: File,filename:String) {
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+
+        // Get the image dimensions
+        BitmapFactory.decodeFile(imageFile.absolutePath, options)
+
+        // Scale down the image if it's too large
+        options.inSampleSize = calculateInSampleSize(options, 1000, 1000) // Customize this as needed
+        options.inJustDecodeBounds = false
+
+        val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath, options)
+
+        // Step 2: Create a PDF from the Bitmap
+        val pdfDocument = PdfDocument()
+        val pageInfo = PdfDocument.PageInfo.Builder(bitmap.width, bitmap.height, 1).create()
+        val page = pdfDocument.startPage(pageInfo)
+
+        val canvas = page.canvas
+        canvas.drawBitmap(bitmap, 0f, 0f, null)
+
+        pdfDocument.finishPage(page)
+
+        // Step 3: Save the PDF to the Downloads folder using MediaStore
+        val contentResolver = context.contentResolver
+        val values = ContentValues().apply {
+            put(MediaStore.Downloads.DISPLAY_NAME, "${filename}.pdf")
+            put(MediaStore.Downloads.MIME_TYPE, "application/pdf")
+            put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS) // Set the folder path to Downloads
+        }
+
+        // Insert the file into the Downloads collection
+        val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+
+        if (uri != null) {
+            try {
+                contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    pdfDocument.writeTo(outputStream)
+                }
+
+                pdfDocument.close()
+
+                Log.d("PDF", "PDF saved to Downloads: $uri")
+                previewDialog.dismiss()
+                custom_snackbar("PDF saved to Downloads")
+
+            } catch (e: IOException) {
+                pdfDocument.close()
+                Log.e("PDF", "Error saving PDF to Downloads", e)
+            }
+        } else {
+            Log.e("PDF", "Failed to create URI for PDF")
+        }
+    }
+
+    fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        val height = options.outHeight
+        val width = options.outWidth
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight = height / 2
+            val halfWidth = width / 2
+
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+
+        return inSampleSize
     }
 }
