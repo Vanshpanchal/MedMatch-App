@@ -10,12 +10,17 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.android.volley.Request
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.example.med.databinding.FragmentExploreBinding
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.getField
 import com.google.firebase.storage.StorageReference
+import org.json.JSONObject
 
 
 class Explore : Fragment() {
@@ -24,6 +29,8 @@ class Explore : Fragment() {
     private lateinit var sr: StorageReference
     lateinit var med_store: ArrayList<MedicalStore>
     lateinit var binding: FragmentExploreBinding
+    private var P_longitude = 0.0
+    private var P_latitude = 0.0
 
     var textWatcher: TextWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
@@ -67,6 +74,7 @@ class Explore : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val recyclerView = binding.rvShop
+        auth = FirebaseAuth.getInstance()
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.searchBtn.setOnClickListener {
             searchMedicineAcrossAllShops(binding.search.text.toString().trim()) {
@@ -126,7 +134,10 @@ class Explore : Fragment() {
 
         exploreAdapter.onEdit(object : exploreAdapter.EditClick {
             override fun onEditClick(position: Int) {
-                Log.d("Hello", "onEditClick: Locate")
+                addressApi(store[position].Address!!, store[position].Uid!!,store[position].ShopName!!)
+                val mapFragment = MapsFragment()
+                (activity as? User)?.replacefragement(mapFragment, "specific_inventory")
+                Log.d("Hello", "onEditClick: Locate ${store[position].Address!!+ store[position].Uid!!+ store[position].ShopName!!}")
             }
 
         })
@@ -279,5 +290,56 @@ class Explore : Fragment() {
         }
         bar.setActionTextColor(resources.getColor(R.color.white))
         bar.show()
+    }
+    private fun addressApi(Address: String, Uid: String,shopname:String) {
+        Log.d("D_CHECK", "addressApi: ${Address}")
+        var cordinates = listOf<Double>()
+        val url =
+            "https://api.geoapify.com/v1/geocode/search?text=$Address&apiKey=a4df04f3e2154cafbf08d57831558743"
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+
+                var longitude = 0.0
+                var latitude = 0.0
+                val jsonObject = JSONObject(response)
+                val featuresArray = jsonObject.getJSONArray("features")
+                val feature = featuresArray.getJSONObject(0)
+                val geometry = feature.getJSONObject("geometry")
+                val coordinates = geometry.getJSONArray("coordinates")
+                if (coordinates.length() >= 2) {
+                    longitude = coordinates.getDouble(0)
+                    latitude = coordinates.getDouble(1)
+                    P_longitude = longitude
+                    P_latitude = latitude
+//                    }
+                }
+                Log.d("D_CHECK", "addressApi: ${longitude}  $latitude}")
+                fs = FirebaseFirestore.getInstance()
+                val cordinates = hashMapOf(
+                    "Longitude" to P_longitude,
+                    "Latitude" to P_latitude,
+                    "Address" to Address,
+                    "CreatedAt" to Timestamp.now().toDate(),
+                    "UserID" to Uid,
+                    "Shopname" to shopname
+                )
+
+                fs.collection("Cordinates").document(Uid)
+                    .collection("MyCordinates").document("data").set(
+                        cordinates
+                    ).addOnSuccessListener {
+                        Log.d(
+                            "D_CHECK",
+                            "Successfully added to firestore addressApi: ${cordinates}"
+                        )
+                    }
+
+            },
+            { error ->
+            })
+        Volley.newRequestQueue(requireContext()).add(stringRequest)
+
+
     }
 }

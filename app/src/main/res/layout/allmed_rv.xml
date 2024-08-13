@@ -18,6 +18,7 @@
         app:layout_constraintTop_toTopOf="parent">
         <TextView
             android:id="@+id/sr"
+            android:textStyle="bold"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -41,7 +42,7 @@
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_weight="3.5"
+            android:layout_weight="4.8"
             android:orientation="vertical"
             android:gravity="center"
             android:layout_gravity="start"
@@ -52,6 +53,7 @@
                 android:layout_gravity="start"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="8sp"
+
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 tools:text="1" />
@@ -75,26 +77,16 @@
             android:id="@+id/m_stock"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1.2"
+            android:layout_weight="1.5"
             android:gravity="center_vertical"
             android:paddingStart="8dp"
             android:paddingEnd="0dp"
+            android:textStyle="bold"
             android:textColor="@color/black"
             android:textSize="16sp"
             tools:text="100" />
 
-        <ImageButton
-            android:id="@+id/edit_btn"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="1.0"
-            android:layout_marginStart="10dp"
-            android:backgroundTint="@color/transparent"
-            android:contentDescription="edit"
-            android:scaleType="centerCrop"
-            android:src="@drawable/baseline_edit_24"
-            app:tint="@color/black" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -64,7 +64,7 @@ class MapsFragment : Fragment() {
                 Log.d("D_CHECK", "helloMap:: ${it.documents}")
 
                 fs.collection("Cordinates").document(document.data["Uid"].toString())
-                    .collection("MyCordinates").get()
+                    .collection("MyCordinates").orderBy("CreatedAt",Query.Direction.DESCENDING).get()
                     .addOnSuccessListener { documents ->
                         for (document in documents) {
                             Log.d("D_CHECK", "helloMap ${documents}")
@@ -90,7 +90,7 @@ class MapsFragment : Fragment() {
                             googleMap.moveCamera(
                                 CameraUpdateFactory.newLatLngZoom(
                                     lastPosition,
-                                    1f
+                                    0.65f
                                 )
                             )
                         }

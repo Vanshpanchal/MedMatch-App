@@ -31,7 +31,7 @@ class exploreAdapter(private val items: ArrayList<MedicalStore>): RecyclerView.A
         val item = items[position]
         val p_no = position + 1
         holder.shopname.text = "Name: "+item.ShopName
-        holder.address.text = "Category: "+item.Address
+        holder.address.text = "Address: "+ if (item.Address.toString().length>35){item.Address.toString().substring(0,35)+"..."}else{item.Address.toString()}
         holder.sr.text = p_no.toString() + "."
     }
 

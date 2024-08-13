@@ -27,6 +27,7 @@ class User : AppCompatActivity() {
                 }
 
                 R.id.item_2 -> {
+                    replacefragement(allmedicines(), "allmedicines")
 
 
                     true
