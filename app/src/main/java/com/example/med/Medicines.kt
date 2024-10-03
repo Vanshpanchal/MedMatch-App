@@ -51,6 +51,8 @@ class Medicines : Fragment() {
     lateinit var previewDialog: BottomSheetDialog
     private lateinit var auth: FirebaseAuth
     private lateinit var fs: FirebaseFirestore
+    lateinit private var filter: ArrayList<String>
+    lateinit private var filter_name: ArrayList<String>
     private lateinit var sr: StorageReference
     lateinit var medicineList: ArrayList<medicine>
     var imageUri: Uri = android.net.Uri.EMPTY
@@ -93,6 +95,7 @@ class Medicines : Fragment() {
 
         override fun afterTextChanged(s: Editable) {
             // this function is called after text is edited
+            search()
         }
     }
 
@@ -174,6 +177,7 @@ class Medicines : Fragment() {
                 }
             }
             dialog.show()
+
         }
 
         binding.searchBtn.setOnClickListener {
@@ -197,6 +201,9 @@ class Medicines : Fragment() {
         }
 
         binding.search.addTextChangedListener(textWatcher)
+
+
+
     }
 
     fun get_data() {
@@ -222,6 +229,9 @@ class Medicines : Fragment() {
         binding.rvMedicine.adapter = adapter
         if (medicine.size == 0) {
             binding.msg.visibility = View.VISIBLE
+        }else{
+            binding.msg.visibility = View.GONE
+
         }
         adapter.onEdit(object : medicineAdapter.EditClick {
             override fun onEditClick(position: Int) {
@@ -375,6 +385,38 @@ class Medicines : Fragment() {
                         }
                     }.show()
                 }
+
+                if (medicineList[position].LowStock?.toInt() != -1) {
+                    view.findViewById<Button>(R.id.remove_notify).visibility = View.VISIBLE
+                }
+                view.findViewById<Button>(R.id.remove_notify).setOnClickListener {
+                    fs.collection("Medicines").document(auth.currentUser?.uid!!)
+                        .collection("MyMedicines")
+                        .whereEqualTo("MedicineId", medicineList[position].MedicineId).get()
+                        .addOnSuccessListener {
+                            for (doc in it) {
+                                val docRef = doc.reference
+
+                                docRef.update(
+                                    "LowStock",
+                                    "-1"
+                                ).addOnSuccessListener {
+//                                    s_getdata()
+//                                    checkUser()
+                                    get_data()
+                                    custom_snackbar("Stock Alert For ${medicineList[position].Medicine} Updated Successfully")
+                                    monitorStock()
+                                    Log.d("D_CHECK", "onItemLongClick: Updated")
+                                    previewDialog.dismiss()
+                                }.addOnFailureListener {
+                                    Log.d("D_CHECK", "onItemLongClick: ${it.message}")
+                                }
+                            }
+                            Log.d("D_CHECK", "onItemLongClick: ${it}")
+                        }.addOnFailureListener {
+                            Log.d("D_CHECK", "onItemLongClick: ${it.message}")
+                        }
+                }
             }
 
         })
@@ -402,7 +444,6 @@ class Medicines : Fragment() {
             bar.dismiss()
 
         }
-        bar.setActionTextColor(resources.getColor(R.color.blue))
         bar.show()
     }
 
@@ -558,4 +599,6 @@ class Medicines : Fragment() {
         }
 
     }
+
+
 }

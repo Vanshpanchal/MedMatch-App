@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
@@ -63,6 +64,22 @@ class medicineAdapter(private val context: Context,private val items: ArrayList<
             Glide.with(context)
                 .load(it)
                 .into(holder.image)
+        }
+        if (item.Stock?.toInt()!! < item.LowStock!!.toInt()) {
+            holder.stock.setTextColor(
+                ContextCompat.getColor(
+                    holder.itemView.context,
+                    R.color.red
+                )
+            )
+
+        } else {
+            holder.stock.setTextColor(
+                ContextCompat.getColor(
+                    holder.itemView.context,
+                    R.color.black
+                )
+            )
         }
 
 

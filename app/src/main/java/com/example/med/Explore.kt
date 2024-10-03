@@ -228,7 +228,7 @@ class Explore : Fragment() {
                     .get().addOnSuccessListener { medicineSnapshots ->
                         for (medicineDoc in medicineSnapshots.documents) {
                             val medicine = medicineDoc.toObject(medicine::class.java)
-                            if (medicine?.Medicine?.startsWith(name, ignoreCase = true) == true) {
+                            if (medicine?.Medicine?.startsWith(name, ignoreCase = true) == true && medicine.Stock?.toInt()!! > 0) { // Changes
                                 val medicineId = medicine.MedicineId
                                 isfound = true
                                 Log.d("hello", "searchMedicineAcrossAllShops: $medicineId")
