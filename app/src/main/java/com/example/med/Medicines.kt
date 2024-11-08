@@ -533,6 +533,7 @@ class Medicines : Fragment() {
         }
     }
 
+    // Notification Function
     private fun showNotification(title: String, message: String) {
         val notificationManager =
             requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

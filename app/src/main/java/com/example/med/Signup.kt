@@ -36,7 +36,12 @@ class Signup : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         fs = FirebaseFirestore.getInstance()
 
-
+        // final minor changes
+        binding.backSignUp.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         binding.SignupBtn.setOnClickListener {
             if (binding.username.text.toString().isNotBlank() && binding.email.text.toString()

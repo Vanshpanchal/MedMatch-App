@@ -499,6 +499,7 @@ fun checkLocationPermission() {
         }
     }
 
+    // Location form Device
     private fun getLocationAndUpdateFirestore() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
@@ -522,6 +523,7 @@ fun checkLocationPermission() {
         }
     }
 
+    //Location
     private fun updateFirestoreWithLocationData(latitude: Double, longitude: Double, address: String) {
         val cordinates = mapOf(
             "Longitude" to longitude,

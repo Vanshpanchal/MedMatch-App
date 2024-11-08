@@ -36,8 +36,10 @@ class Signin : AppCompatActivity() {
                 sharedPreferences.getString("Pass", "").toString()
             )
         }
+        // final minor changes
         binding.frgPassword.setOnClickListener {
-            if (binding.email.text.isNullOrBlank()) {
+            if (!binding.email.text.isNullOrBlank()) {
+                Log.d("D_CHECK", "resetPassword: Clicked")
                 resetPassword(binding.email.text.toString())
             }
         }
@@ -49,6 +51,12 @@ class Signin : AppCompatActivity() {
             } else {
                 custom_snackbar("Enter Proper Credentials")
             }
+        }
+        // final minor changes
+        binding.bSignIn.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 

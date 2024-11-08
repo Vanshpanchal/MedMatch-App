@@ -271,7 +271,8 @@ class invoices : Fragment() {
                     MaterialAlertDialogBuilder(
                         requireContext(),
                     )
-                        .setTitle("Remove Product")
+                        // final minor changes
+                        .setTitle("Delete Invoice")
                         .setIcon(R.drawable.baseline_medical_services_24)
                         .setMessage("Are you sure you want to remove ${invoiceList[position].InvoiceName}?")
                         .setPositiveButton("Yes") { dialog, which ->
