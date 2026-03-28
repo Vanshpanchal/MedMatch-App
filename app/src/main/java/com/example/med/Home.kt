@@ -95,7 +95,7 @@ class Home : AppCompatActivity() {
     private fun addressApi(Address: String, Uid: String) {
         var cordinates = listOf<Double>()
         val url =
-            "https://api.geoapify.com/v1/geocode/search?text=$Address&apiKey=a4df04f3e2154cafbf08d57831558743"
+            "https://api.geoapify.com/v1/geocode/search?text=$Address&apiKey="
         val stringRequest = StringRequest(
             Request.Method.GET, url,
             { response ->
