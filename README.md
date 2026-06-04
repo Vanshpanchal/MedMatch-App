@@ -1,13 +1,13 @@
 # MedMatch
-**[Download APK](Medmatch.apk)**
+**[Download APK](Medmatch_Final.apk)**
 ## Overview
 The **MedMatch** app is a comprehensive solution designed to enhance the efficiency and reliability of pharmacy operations while improving the user experience. Built with Kotlin for Android and Firebase as the backend database, the app focuses on efficient inventory management, real-time alerts, and a user-friendly interface. The platform serves both chemists and users by offering tailored functionalities to streamline pharmacy processes.
 
 ## Screenshots
 
-![1](https://github.com/user-attachments/assets/e4dd401c-a8bd-4aa0-bc5c-709eb6318f4b)
-![2](https://github.com/user-attachments/assets/d32a8ce6-895f-4082-a3e2-4fa40987b1f2)
-![3](https://github.com/user-attachments/assets/74c38158-308e-4f3f-8805-89d0bf4ef20d)
+![1](MedMatch-1.png)
+![2](MedMatch-2.png)
+![3](MedMatch-3.png)
 
 ## Features
 
